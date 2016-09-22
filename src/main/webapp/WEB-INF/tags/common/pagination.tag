@@ -20,8 +20,5 @@
 	<span id="total-record-no">${page.totalElements}</span>
 	
 	<span id="page-id-list" style="float: right;" >
-		<c:forEach var="pageId" begin="1" end="${page.totalPages}">
-			<a class="pagination-link" href="" onclick="searchItemsAtPage(${pageId - 1});">${pageId}</a>
-		</c:forEach>
 	</span>
 </p>

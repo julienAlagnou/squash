@@ -56,10 +56,10 @@ function getPageResourceConfiguration() {
 
 function searchItemsAtPage(pageNo) {
 
-	resource = getPageResourceConfiguration();
+	var resource = getPageResourceConfiguration();
 
 	// update page id textfield
-	$("#pagination-form #page").val(pageNo);
+	$("#pagination-form").find("#page").val(pageNo);
 
 	// submit form
 	searchItems(resource);
@@ -94,7 +94,7 @@ function loadAndRenderData(resource) {
 		// update table and pagination information
 		if (pageData.content) {
 			// itemList = pageData._embedded[Object.keys(pageData._embedded)[0]];
-			itemList = pageData.content;
+			var itemList = pageData.content;
 			renderSearchResult(itemList);
 			updatePaginationInfo(pageData.page, itemList.length);
 		} else {
@@ -117,23 +117,44 @@ function fillSearchForm(data) {
 	});
 }
 
-function updatePaginationInfo(data, numberOfElmtsInPage) {
-	// update pagination information
-	var startRecordNo = (numberOfElmtsInPage != 0) ? data.number * data.size + 1 : data.number * data.size;
-	var endRecordNo = data.number * data.size + numberOfElmtsInPage;
-	var totalRecordNo = data.totalElements;
+/**
+ * @param pageData					Pagination information.
+ * @param pageData.number			Current page index.
+ * @param pageData.size				Nb of elements per page (same for all pages).
+ * @param pageData.totalElements	Total number of elements in the result set.
+ * @param pageData.totalPages		Total number of pages.
+ * @param numberOfElmtsInPage		Nb of elements in the current page (different for last page).
+ */
+function updatePaginationInfo(pageData, numberOfElmtsInPage) {
+
+	console.log('page info. number:' + pageData.number + ' size:' + pageData.size + ' totalElements:' + pageData.totalElements + ' totalPages:' + pageData.totalPages + ' numberOfElmtsInPage:' + numberOfElmtsInPage);
+
+	// update record number information
+	var startRecordNo = (numberOfElmtsInPage != 0) ? pageData.number * pageData.size + 1 : pageData.number * pageData.size;
+	var endRecordNo = pageData.number * pageData.size + numberOfElmtsInPage;
+	var totalRecordNo = pageData.totalElements;
 
 	$("#start-record-no").html(startRecordNo);
 	$("#end-record-no").html(endRecordNo);
-	$("#total-record-no").html(totalRecordNo);
 
-	$("#pagination-form #page").val(data.number);
-	$("#total-record-no #size").val(data.size);
-	console.log('page info: ' + data.number + ' ' + data.size);
+	var totalRecordNoSelector = $("#total-record-no");
+	totalRecordNoSelector.html(totalRecordNo);
 
-	$('#page-id-list').html('');
-	for (i = 0; i < data.totalPages; i++) {
-		$('#page-id-list').append(
-				'<a class="pagination-link" href="" onclick="searchItemsAtPage(' + i + ');" >' + (i + 1) + '</a>&nbsp;');
-	}
+	$("#pagination-form").find("#page").val(pageData.number);
+	totalRecordNoSelector.find("#size").val(pageData.size);
+
+	// update page navigation links
+	var pageIdListSelector = $('#page-id-list');
+	pageIdListSelector.html('');
+
+	var previousPageIndex = pageData.number > 0 ? pageData.number - 1 : 0;
+	var lastPageIndex = pageData.totalPages - 1;
+	var nextPageIndex = pageData.number < lastPageIndex ? pageData.number + 1 : pageData.number;
+
+	pageIdListSelector.append('<a class="pagination-link" href="" onclick="searchItemsAtPage(0);" > << </a>&nbsp;')
+		.append('<a class="pagination-link" href="" onclick="searchItemsAtPage(' + previousPageIndex + ');" > < </a>&nbsp;')
+		.append('<a class="pagination-link" href="" onclick="searchItemsAtPage(' + pageData.number + ');" >' + (pageData.number + 1) + '</a>&nbsp;')
+		.append('<a class="pagination-link" href="" onclick="searchItemsAtPage(' + nextPageIndex + ');" > > </a>&nbsp;')
+		.append('<a class="pagination-link" href="" onclick="searchItemsAtPage(' + lastPageIndex + ');" > >> </a>&nbsp;')
+
 }
